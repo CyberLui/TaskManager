@@ -47,5 +47,5 @@ public class TaskService {
         entity.setDescription(obj.getDescription());
         entity.setStatus(obj.getStatus());
     }
-    
+
 }

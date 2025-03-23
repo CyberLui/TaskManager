@@ -2,10 +2,7 @@ package com.evtech.taskmanager.entities;
 
 
 import com.evtech.taskmanager.entities.enuns.Status;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +20,8 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     public Task() {

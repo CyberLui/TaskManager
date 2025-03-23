@@ -1,11 +1,16 @@
 package com.evtech.taskmanager.entities;
 
 import com.evtech.taskmanager.entities.enuns.Role;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
+import java.util.Objects;
+
+@Entity
+@Table(name = "user_tb")
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -13,16 +18,22 @@ public class User {
     private String email;
     private String password;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 
-    public User(Long id, String email, String password ) {
-        this.id = id;
+    public User() {
+    }
+
+    public User( String email, String password ) {
         this.name = email;
         this.username = email;
         this.email = email;
         this.password = password;
         this.role = Role.ROLE_USER;
     }
+
+
+
 
     public Long getId() {
         return id;
@@ -70,5 +81,17 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
