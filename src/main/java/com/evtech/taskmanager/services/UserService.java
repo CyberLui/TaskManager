@@ -1,6 +1,7 @@
 package com.evtech.taskmanager.services;
 
 import com.evtech.taskmanager.entities.User;
+import com.evtech.taskmanager.entities.enuns.Role;
 import com.evtech.taskmanager.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,13 @@ public class UserService {
     }
 
     public User insert(User obj){
+        if (obj.getName() == null || obj.getName().isEmpty()) {
+            obj.setName(obj.getEmail());
+        }
+        if (obj.getUsername() == null || obj.getUsername().isEmpty()) {
+            obj.setUsername(obj.getEmail());
+        }
+        obj.setRole(Role.ROLE_USER);
         return userRepository.save(obj);
     }
 
