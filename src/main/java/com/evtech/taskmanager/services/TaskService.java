@@ -48,4 +48,7 @@ public class TaskService {
         entity.setStatus(obj.getStatus());
     }
 
+    public void delete(Long id){
+        taskRepository.deleteById(id);
+    }
 }

@@ -25,10 +25,7 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Task() {
-        this.creationDate = LocalDateTime.now();
-        this.status = Status.PENDENTE;
-    }
+
 
     public Task(Long id, String title, User user) {
         this.id = id;
