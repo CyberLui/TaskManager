@@ -2,12 +2,15 @@ package com.evtech.taskmanager.services;
 
 
 import com.evtech.taskmanager.entities.Task;
+import com.evtech.taskmanager.entities.enuns.Priority;
+import com.evtech.taskmanager.entities.enuns.Status;
 import com.evtech.taskmanager.repositories.TaskRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +30,9 @@ public class TaskService {
     }
 
     public Task insert(Task obj){
+        obj.setCreationDate(LocalDateTime.now());
+        obj.setStatus(Status.PENDENTE);
+        obj.setPriority(Priority.MEDIUM);
         return taskRepository.save(obj);
     }
 

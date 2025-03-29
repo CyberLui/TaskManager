@@ -1,6 +1,7 @@
 package com.evtech.taskmanager.entities;
 
 
+import com.evtech.taskmanager.entities.enuns.Priority;
 import com.evtech.taskmanager.entities.enuns.Status;
 import jakarta.persistence.*;
 
@@ -11,8 +12,11 @@ import java.time.LocalDateTime;
 public class Task {
 
 
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String title;
     private String description;
     private LocalDateTime creationDate;
@@ -21,18 +25,21 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
+    // @ManyToOne
+   // @JoinColumn(name = "user_id")
+   // private User user;
 
 
+    public Task(){ }
 
-    public Task(Long id, String title, User user) {
-        this.id = id;
+    public Task(Long id, String title) {
         this.title = title;
         this.creationDate = LocalDateTime.now();
         this.status = Status.PENDENTE;
-        this.user = user;
+        this.priority = Priority.MEDIUM;
+
     }
 
     public Long getId() {
@@ -83,12 +90,11 @@ public class Task {
         this.status = status;
     }
 
-    public User getUser() {
-        return user;
+    public Priority getPriority() {
+        return priority;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
-
 }
