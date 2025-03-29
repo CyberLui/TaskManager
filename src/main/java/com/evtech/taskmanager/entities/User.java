@@ -1,8 +1,11 @@
 package com.evtech.taskmanager.entities;
 
 import com.evtech.taskmanager.entities.enuns.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -16,10 +19,15 @@ public class User {
     private String name;
     private String username;
     private String email;
+
+
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<Task> taskList = new ArrayList<>();
 
     public User() {
     }
@@ -83,12 +91,22 @@ public class User {
         this.role = role;
     }
 
+    public List<Task> getTaskList() {
+        return taskList;
+    }
+
+    public void setTaskList(List<Task> taskList) {
+        this.taskList = taskList;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
         return Objects.equals(id, user.id);
     }
+
+
 
     @Override
     public int hashCode() {

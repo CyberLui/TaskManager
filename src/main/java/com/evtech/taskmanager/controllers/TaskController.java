@@ -3,6 +3,7 @@ package com.evtech.taskmanager.controllers;
 import com.evtech.taskmanager.entities.Task;
 import com.evtech.taskmanager.entities.User;
 import com.evtech.taskmanager.services.TaskService;
+import com.evtech.taskmanager.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,8 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
+    private UserService userService;
+
     @GetMapping
     public ResponseEntity<List<Task>> findAll() {
         List<Task> list = taskService.findAll();
@@ -32,8 +35,8 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<Task> insert(@RequestBody Task obj){
-        obj = taskService.insert(obj);
+    public ResponseEntity<Task> insert(@RequestBody Task obj, @RequestParam Long userId){
+        obj = taskService.insert(obj, userId);
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
@@ -49,8 +52,8 @@ public class TaskController {
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Task> update(@PathVariable Long id, @RequestBody Task obj){
-        obj = taskService.update(id, obj);
+    public ResponseEntity<Task> update(@PathVariable Long id, @RequestBody Task obj, @RequestParam(required = false) Long userId){
+        obj = taskService.update(id, obj, userId);
         return ResponseEntity.ok().body(obj);
     }
 }

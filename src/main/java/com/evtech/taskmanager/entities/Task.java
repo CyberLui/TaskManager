@@ -6,6 +6,7 @@ import com.evtech.taskmanager.entities.enuns.Status;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Entity
 @Table(name = "task_tb")
@@ -27,18 +28,20 @@ public class Task {
 
     @Enumerated(EnumType.STRING)
     private Priority priority;
-    // @ManyToOne
-   // @JoinColumn(name = "user_id")
-   // private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id",nullable = false)
+    private User user;
 
 
     public Task(){ }
 
-    public Task(Long id, String title) {
+    public Task(Long id, String title, User user) {
         this.title = title;
         this.creationDate = LocalDateTime.now();
         this.status = Status.PENDENTE;
         this.priority = Priority.MEDIUM;
+        this.user = user;
 
     }
 
@@ -96,5 +99,13 @@ public class Task {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
