@@ -3,6 +3,8 @@ package com.evtech.taskmanager.entities;
 import com.evtech.taskmanager.entities.enuns.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,9 @@ public class User {
         this.role = Role.ROLE_USER;
     }
 
+    public User(Long id){
+        this.id = id;
+    }
 
 
 
@@ -67,6 +72,7 @@ public class User {
         this.username = username;
     }
 
+
     public String getEmail() {
         return email;
     }
@@ -79,6 +85,7 @@ public class User {
         return password;
     }
 
+    @NotBlank
     public void setPassword(String password) {
         this.password = password;
     }

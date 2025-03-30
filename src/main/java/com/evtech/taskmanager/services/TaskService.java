@@ -1,64 +1,80 @@
 package com.evtech.taskmanager.services;
 
-
+import com.evtech.taskmanager.dtos.TaskDTO;
 import com.evtech.taskmanager.entities.Task;
 import com.evtech.taskmanager.entities.User;
 import com.evtech.taskmanager.entities.enuns.Priority;
 import com.evtech.taskmanager.entities.enuns.Status;
+import com.evtech.taskmanager.exceptions.ResourceNotFoundException;
 import com.evtech.taskmanager.repositories.TaskRepository;
-import com.evtech.taskmanager.repositories.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.ResourceAccessException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
 
-    @Autowired
-    private TaskRepository taskRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final TaskRepository taskRepository;
+    private final UserService userService;
 
-    public List<Task> findAll(){
-        return taskRepository.findAll();
+    public TaskService(TaskRepository taskRepository, UserService userService){
+        this.taskRepository = taskRepository;
+        this.userService =userService;
     }
 
-    public Task findById(Long id){
-        Optional<Task> obj = taskRepository.findById(id);
-        return obj.orElseThrow(()-> new ResourceAccessException("Task NOt Found!"));
+    public List<TaskDTO> findAll() {
+        return taskRepository.findAll()
+                .stream()
+                .map(TaskDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
-    public Task insert(Task obj, Long userId){
-        Optional<User> user = userRepository.findById(userId);
-        obj.setCreationDate(LocalDateTime.now());
-        obj.setStatus(Status.PENDENTE);
-        obj.setPriority(Priority.MEDIUM);
-        obj.setUser(user);
-        return taskRepository.save(obj);
+    public TaskDTO findById(Long id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tarefa não encontrada"));
+        return TaskDTO.fromEntity(task);
     }
 
-    public Task update(Long id, Task obj, @RequestParam(required = false) Long userId){
-        try{
-            Task entity = taskRepository
-                    .findById(id).orElseThrow(()-> new EntityNotFoundException("TAsk Not Found! " + id));
-
-        updateData(entity, obj, userId);
-        if (userId != null) {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found! ID: " + userId));
-            entity.setUser(Optional.ofNullable(user));
+    @Transactional
+    public TaskDTO insert(TaskDTO dto, Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("O ID do usuário é obrigatório.");
         }
-        return taskRepository.save(entity);
-        }catch (Exception e){
-            throw new RuntimeException("Update Task Error! " + e.getMessage());
+
+        Task task = dto.toEntity();
+
+        // Busca o usuário no banco pelo ID e associa à Task
+        User user = userService.findById(userId);
+        task.setUser(user);
+        task.setCreationDate(LocalDateTime.now());
+        task.setStatus(Status.PENDENTE); // Garante que o status seja PENDENTE
+
+        // Salva a Task
+        task = taskRepository.save(task);
+
+        return TaskDTO.fromEntity(task);
+    }
+
+
+    @Transactional
+    public TaskDTO update(Long id, TaskDTO dto) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tarefa não encontrada"));
+
+        if (dto.getTitle() != null) task.setTitle(dto.getTitle());
+        if (dto.getDescription() != null) task.setDescription(dto.getDescription());
+        if (dto.getPriority() != null) task.setPriority(dto.getPriority());
+
+        if (dto.getUserId() != null) {
+            task.setUser(userService.findById(dto.getUserId()));
         }
+
+        task = taskRepository.save(task);
+        return TaskDTO.fromEntity(task);
     }
 
     private void updateData(Task entity, Task obj, Long userId) {
@@ -68,7 +84,12 @@ public class TaskService {
         entity.setPriority(obj.getPriority());
     }
 
-    public void delete(Long id){
+    @Transactional
+    public void delete(Long id) {
+        if (!taskRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Tarefa não encontrada");
+        }
         taskRepository.deleteById(id);
     }
 }
+

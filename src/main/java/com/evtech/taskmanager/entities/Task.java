@@ -4,6 +4,7 @@ package com.evtech.taskmanager.entities;
 import com.evtech.taskmanager.entities.enuns.Priority;
 import com.evtech.taskmanager.entities.enuns.Status;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -18,6 +19,7 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     private String title;
     private String description;
     private LocalDateTime creationDate;
