@@ -1,14 +1,17 @@
 package com.evtech.taskmanager.controllers;
 
+import com.evtech.taskmanager.dtos.TaskDTO;
 import com.evtech.taskmanager.dtos.UserDTO;
 import com.evtech.taskmanager.entities.User;
 import com.evtech.taskmanager.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -22,16 +25,40 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> findAll() {
         List<User> list = userService.findAll();
         List<UserDTO> dtoList = list.stream()
-                .map(t -> new UserDTO(t.getId(), t.getName(), t.getUsername(),t.getEmail() ,t.getPassword()))
-                .toList();
+                .map(user -> {
+                    List<TaskDTO> tasksDTO = user.getTaskList().stream()
+                            .map(t -> new TaskDTO(
+                                    t.getId(),
+                                    t.getTitle(),
+                                    t.getDescription(),
+                                    t.getUser().getId(),
+                                    t.getPriority(),
+                                    t.getCreationDate(),
+                                    t.getStatus()
+                            )).toList();
+
+                    return new UserDTO(user.getId(), user.getName(), user.getName(), user.getEmail(), user.getPassword(), tasksDTO);
+                }).toList();
+
         return ResponseEntity.ok().body(dtoList);
     }
 
+    @Transactional(readOnly = true)
     @GetMapping(value = "/{id}")
     public ResponseEntity<UserDTO> findById(@PathVariable Long id){
         User obj = userService.findById(id);
-        UserDTO dto = new UserDTO(obj.getId(), obj.getName(),obj.getUsername() ,obj.getEmail(),obj.getPassword());
-        return ResponseEntity.ok().body(dto);
+        List<TaskDTO> tasksDTO = obj.getTaskList().stream()
+                .map(t -> new TaskDTO(
+                        t.getId(),
+                        t.getTitle(),
+                        t.getDescription(),
+                        t.getUser().getId(),
+                        t.getPriority(),
+                        t.getCreationDate(),
+                        t.getStatus()
+                )).toList();
+
+        UserDTO dto = new UserDTO(obj.getId(), obj.getName(), obj.getUsername(), obj.getEmail(), obj.getPassword(), tasksDTO);        return ResponseEntity.ok().body(dto);
     }
 
     @PostMapping
@@ -40,6 +67,7 @@ public class UserController {
         obj.setEmail(dto.email());
         obj.setPassword(dto.password());
         obj = userService.insert(obj);
+        List<TaskDTO> tasksDTO = new ArrayList<>();
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -51,7 +79,8 @@ public class UserController {
                 obj.getName(),
                 obj.getUsername() ,
                 obj.getEmail(),
-                obj.getPassword())
+                obj.getPassword(),
+                tasksDTO)
         );
     }
 
@@ -65,18 +94,32 @@ public class UserController {
     public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody UserDTO dto){
         User obj = new User();
         obj.setName(dto.name());
-        obj.setName(dto.username());
+        obj.setUsername(dto.username());
         obj.setEmail(dto.email());
         obj.setPassword(dto.password());
 
+        // Atualiza o usuário mantendo as tarefas existentes
         obj = userService.update(id, obj);
+
+        // Converter as tarefas do usuário atualizado para TaskDTO
+        List<TaskDTO> tasksDTO = obj.getTaskList().stream()
+                .map(t -> new TaskDTO(
+                        t.getId(),
+                        t.getTitle(),
+                        t.getDescription(),
+                        t.getUser().getId(),
+                        t.getPriority(),
+                        t.getCreationDate(),
+                        t.getStatus()
+                )).toList();
 
         return ResponseEntity.ok().body(new UserDTO(
                 obj.getId(),
                 obj.getName(),
-                obj.getUsername() ,
+                obj.getUsername(),
                 obj.getEmail(),
-                obj.getPassword())
-        );
+                obj.getPassword(),
+                tasksDTO
+        ));
     }
 }
