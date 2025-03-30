@@ -1,4 +1,10 @@
 package com.evtech.taskmanager.dtos;
 
-public record UserDTO(String email, String password) {
+import jakarta.validation.constraints.NotBlank;
+
+public record UserDTO(Long id,
+                      String name,
+                      String username,
+                      @NotBlank String email,
+                      String password ) {
 }

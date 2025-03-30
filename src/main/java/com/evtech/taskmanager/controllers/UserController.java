@@ -1,5 +1,6 @@
 package com.evtech.taskmanager.controllers;
 
+import com.evtech.taskmanager.dtos.UserDTO;
 import com.evtech.taskmanager.entities.User;
 import com.evtech.taskmanager.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,31 +18,41 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-
-
     @GetMapping
-    public ResponseEntity<List<User>> findAll() {
+    public ResponseEntity<List<UserDTO>> findAll() {
         List<User> list = userService.findAll();
-        return ResponseEntity.ok().body(list);
+        List<UserDTO> dtoList = list.stream()
+                .map(t -> new UserDTO(t.getId(), t.getName(), t.getUsername(),t.getEmail() ,t.getPassword()))
+                .toList();
+        return ResponseEntity.ok().body(dtoList);
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<User> findById(@PathVariable Long id){
+    public ResponseEntity<UserDTO> findById(@PathVariable Long id){
         User obj = userService.findById(id);
-        return ResponseEntity.ok().body(obj);
-
+        UserDTO dto = new UserDTO(obj.getId(), obj.getName(),obj.getUsername() ,obj.getEmail(),obj.getPassword());
+        return ResponseEntity.ok().body(dto);
     }
 
     @PostMapping
-    public ResponseEntity<User> insert(@RequestBody User obj){
+    public ResponseEntity<UserDTO> insert(@RequestBody UserDTO dto){
+        User obj = new User();
+        obj.setEmail(dto.email());
+        obj.setPassword(dto.password());
         obj = userService.insert(obj);
+
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(obj.getId())
                 .toUri();
-        return ResponseEntity.created(uri).body(obj);
-
+        return ResponseEntity.created(uri).body(new UserDTO(
+                obj.getId(),
+                obj.getName(),
+                obj.getUsername() ,
+                obj.getEmail(),
+                obj.getPassword())
+        );
     }
 
     @DeleteMapping("/{id}")
@@ -51,10 +62,21 @@ public class UserController {
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User obj){
+    public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody UserDTO dto){
+        User obj = new User();
+        obj.setName(dto.name());
+        obj.setName(dto.username());
+        obj.setEmail(dto.email());
+        obj.setPassword(dto.password());
+
         obj = userService.update(id, obj);
-        return ResponseEntity.ok().body(obj);
+
+        return ResponseEntity.ok().body(new UserDTO(
+                obj.getId(),
+                obj.getName(),
+                obj.getUsername() ,
+                obj.getEmail(),
+                obj.getPassword())
+        );
     }
-
-
 }

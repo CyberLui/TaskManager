@@ -20,9 +20,11 @@ public class User {
 
     private String name;
     private String username;
+
+    @NotBlank(message ="Coloque um email")
     private String email;
 
-
+    @NotBlank(message ="Senha inválida")
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -85,7 +87,7 @@ public class User {
         return password;
     }
 
-    @NotBlank
+
     public void setPassword(String password) {
         this.password = password;
     }
