@@ -17,8 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const newTask = {
                 title: title.trim(),
                 description: description.trim(),
-                priority: "MÉDIO", // Valor padrão
-                status: "PENDENTE" // Valor padrão
+               
             };
             
             fetch(`/tasks/${userId}`, {
@@ -26,24 +25,46 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newTask)
             })
-            .then(response => response.ok ? response.json() : Promise.reject("Erro ao salvar tarefa!"))
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erro ao salvar tarefa!");
+                }
+                return response.json();
+            })
             .then(savedTask => {
                 renderTask(savedTask);
                 document.getElementById("taskTitle").value = "";
                 document.getElementById("taskDescription").value = "";
             })
-            .catch(error => alert(error));
+            .catch(error => {
+                console.error("Erro:", error);
+                alert(error.message || "Erro ao salvar tarefa!");
+            });
         });
     }
     
     // Função para exibir nova tarefa no front-end
     function renderTask(task) {
         const taskList = document.getElementById("taskList");
+        
+        // Formatar a data de criação
+        let creationDateHtml = '';
+        if (task.creationDate) {
+            const date = new Date(task.creationDate);
+            const formattedDate = date.toLocaleDateString('pt-BR');
+            const formattedTime = date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            creationDateHtml = `
+                <div class="creation-date text-muted mt-2">
+                    <small>Criado em ${formattedDate} às ${formattedTime}</small>
+                </div>
+            `;
+        }
+        
         const taskHTML = `
             <div class="col-md-4">
                 <div class="card task-card mb-4" data-id="${task.id}">
                     <div class="card-body">
-                        <h5 class="card-title">${task.title}</h5>
+                        <h5 class="card-title editable" onclick="editField(this, 'title')">${task.title}</h5>
                         <p><strong>Prioridade:</strong>
                             <span class="task-priority" onclick="editPriority(this)">${task.priority}</span>
                         </p>
@@ -52,9 +73,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         </p>
                         <button class="btn btn-primary toggle-details-btn">Detalhes</button>
                         <div class="task-details mt-3" style="display: none;">
-                            <p><strong>Descrição:</strong> ${task.description}</p>
+                            <p><strong>Descrição:</strong> 
+                                <span class="task-description editable" onclick="editField(this, 'description')">${task.description}</span>
+                            </p>
                         </div>
-                        <button class="btn btn-danger btn-sm" onclick="deleteTask(event)">Deletar</button>
+                        <button class="btn btn-danger btn-sm" onclick="confirmDelete(event)">Deletar</button>
+                        ${creationDateHtml}
                     </div>
                 </div>
             </div>
@@ -83,8 +107,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // Expor as funções ao escopo global
     window.editPriority = editPriority;
     window.editStatus = editStatus;
+    window.confirmDelete = confirmDelete;
     window.deleteTask = deleteTask;
+    window.editField = editField;
 });
+
+// Função para confirmar e deletar tarefa
+function confirmDelete(event) {
+    if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
+        deleteTask(event);
+    }
+}
 
 // Função para deletar tarefa
 function deleteTask(event) {
@@ -103,7 +136,7 @@ function deleteTask(event) {
             throw new Error("Erro ao deletar tarefa!");
         }
     })
-    .catch(error => alert(error));
+    .catch(error => alert(error.message || "Erro ao deletar tarefa!"));
 }
 
 // Função para editar prioridade
@@ -123,7 +156,7 @@ function editPriority(element) {
             if (!response.ok) throw new Error("Erro ao atualizar prioridade!");
             element.textContent = newPriority; // Atualiza no front-end
         })
-        .catch(error => alert(error));
+        .catch(error => alert(error.message || "Erro ao atualizar prioridade!"));
     }
 }
 
@@ -144,6 +177,29 @@ function editStatus(element) {
             if (!response.ok) throw new Error("Erro ao atualizar status!");
             element.textContent = newStatus; // Atualiza no front-end
         })
-        .catch(error => alert(error));
+        .catch(error => alert(error.message || "Erro ao atualizar status!"));
+    }
+}
+
+// Função para editar título e descrição
+function editField(element, fieldName) {
+    const currentValue = element.textContent.trim();
+    const newValue = prompt(`Editar ${fieldName === 'title' ? 'título' : 'descrição'}:`, currentValue);
+    
+    if (newValue !== null && newValue.trim() !== '' && newValue !== currentValue) {
+        const taskId = element.closest('.task-card').dataset.id;
+        const updateData = {};
+        updateData[fieldName] = newValue.trim();
+        
+        fetch(`/tasks/${taskId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updateData)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`Erro ao atualizar ${fieldName}!`);
+            element.textContent = newValue.trim(); // Atualiza no front-end
+        })
+        .catch(error => alert(error.message || `Erro ao atualizar ${fieldName}!`));
     }
 }

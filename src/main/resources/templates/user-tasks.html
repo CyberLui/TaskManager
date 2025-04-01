@@ -22,7 +22,7 @@
                 <input type="text" id="taskTitle" class="form-control" placeholder="Título da Tarefa" required>
             </div>
             <div class="mb-2">
-                <input type="text" id="taskDescription" class="form-control" placeholder="Descrição" required>
+                <textarea id="taskDescription" class="form-control" placeholder="Descrição" required></textarea>
             </div>
             <button type="submit" class="btn btn-primary">Adicionar</button>
         </div>
@@ -32,7 +32,7 @@
         <div th:each="task : ${tasks}" class="col-md-4">
             <div class="card task-card mb-4" th:data-id="${task.id}">
                 <div class="card-body">
-                    <h5 class="card-title" th:text="${task.title}"></h5>
+                    <h5 class="card-title editable" th:text="${task.title}" onclick="editField(this, 'title')"></h5>
                     <p><strong>Prioridade:</strong>
                         <span class="task-priority" th:text="${task.priority}" onclick="editPriority(this)"></span>
                     </p>
@@ -41,9 +41,14 @@
                     </p>
                     <button class="btn btn-primary toggle-details-btn">Detalhes</button>
                     <div class="task-details mt-3" style="display: none;">
-                        <p><strong>Descrição:</strong> <span th:text="${task.description}"></span></p>
+                        <p><strong>Descrição:</strong> 
+                            <span class="task-description editable" th:text="${task.description}" onclick="editField(this, 'description')"></span>
+                        </p>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="deleteTask(event)">Deletar</button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmDelete(event)">Deletar</button>
+                    <div class="creation-date text-muted mt-2" th:if="${task.creationDate}">
+                        <small>Criado em <span th:text="${#temporals.format(task.creationDate, 'dd/MM/yyyy')}"></span> às <span th:text="${#temporals.format(task.creationDate, 'HH:mm')}"></span></small>
+                    </div>
                 </div>
             </div>
         </div>
