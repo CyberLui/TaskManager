@@ -1,0 +1,28 @@
+.task-card {
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.task-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.task-priority, .task-status {
+    cursor: pointer;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background-color: #f8f9fa;
+}
+
+.task-priority:hover, .task-status:hover {
+    background-color: #e9ecef;
+}
+
+.toggle-details-btn {
+    margin-bottom: 10px;
+}
+
+.task-details {
+    border-top: 1px solid #dee2e6;
+    padding-top: 10px;
+}

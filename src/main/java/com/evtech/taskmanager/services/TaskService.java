@@ -68,7 +68,7 @@ public class TaskService {
         if (dto.getTitle() != null) task.setTitle(dto.getTitle());
         if (dto.getDescription() != null) task.setDescription(dto.getDescription());
         if (dto.getPriority() != null) task.setPriority(dto.getPriority());
-
+        if (dto.getStatus() != null) task.setStatus(dto.getStatus());
         if (dto.getUserId() != null) {
             task.setUser(userService.findById(dto.getUserId()));
         }
