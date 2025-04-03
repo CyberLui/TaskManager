@@ -1,10 +1,231 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - Gerenciador de Tarefas</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+<div class="container">
+    <!-- Barra de navegação -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 rounded shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/tasks">
+                <i class="fas fa-tasks me-2"></i>Gerenciador de Tarefas
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tasks">Minhas Tarefas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/profile">Meu Perfil</a>
+                    </li>
+                    <!-- Mostra link de administração apenas para admins -->
+                    <li class="nav-item" th:if="${session.userRole == 'ROLE_ADMIN'}">
+                        <a class="nav-link" href="/admin/users">Administração</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            <i class="fas fa-user me-1"></i> <span th:text="${session.userName}">Usuário</span>
+                        </span>
+                    <a href="/logout" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
+    <!-- Mensagens de alerta -->
+    <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${success}" th:text="${success}">
+        Perfil atualizado com sucesso!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${error}" th:text="${error}">
+        Erro ao atualizar perfil.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Card principal do perfil -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-circle me-2"></i>Meu Perfil</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Formulário de atualização de perfil -->
+                    <form th:action="@{/profile/update}" method="post" id="profileForm">
+                        <!-- Seção de informações pessoais -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2"><i class="fas fa-info-circle me-2"></i>Informações Pessoais</h5>
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nome Completo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                           th:value="${user.name}" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                           th:value="${user.email}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seção de alteração de senha -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2"><i class="fas fa-lock me-2"></i>Alterar Senha</h5>
+
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Senha Atual</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                    <input type="password" class="form-control" id="currentPassword" name="currentPassword">
+                                    <button type="button" class="btn btn-outline-secondary toggle-password" tabindex="-1">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Necessário para confirmar alterações</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Nova Senha</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="newPassword" name="newPassword">
+                                    <button type="button" class="btn btn-outline-secondary toggle-password" tabindex="-1">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Deixe em branco para manter a senha atual</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmar Nova Senha</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="confirmPassword">
+                                    <button type="button" class="btn btn-outline-secondary toggle-password" tabindex="-1">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="invalid-feedback" id="password-match-error" style="display: none;">
+                                    As senhas não coincidem.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informações da conta -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2"><i class="fas fa-id-card me-2"></i>Informações da Conta</h5>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p><strong>Tipo de Conta:</strong>
+                                        <span class="badge bg-primary" th:text="${user.role == 'ROLE_ADMIN' ? 'Administrador' : 'Usuário'}">Usuário</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>ID da Conta:</strong> <span th:text="${user.id}">1</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões de ação -->
+                        <div class="d-flex justify-content-between">
+                            <a href="/tasks" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="saveButton">
+                                <i class="fas fa-save me-2"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script para validação de formulário e toggle de senha -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility para todos os campos de senha
+        const toggleButtons = document.querySelectorAll('.toggle-password');
+
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const passwordField = this.previousElementSibling;
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        });
+
+        // Validação de confirmação de senha
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const passwordMatchError = document.getElementById('password-match-error');
+        const saveButton = document.getElementById('saveButton');
+        const profileForm = document.getElementById('profileForm');
+
+        function validatePasswordMatch() {
+            if (newPassword.value && confirmPassword.value) {
+                if (newPassword.value !== confirmPassword.value) {
+                    passwordMatchError.style.display = 'block';
+                    confirmPassword.classList.add('is-invalid');
+                    return false;
+                } else {
+                    passwordMatchError.style.display = 'none';
+                    confirmPassword.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        // Validar quando o usuário digita
+        newPassword.addEventListener('input', validatePasswordMatch);
+        confirmPassword.addEventListener('input', validatePasswordMatch);
+
+        // Validar antes de enviar o formulário
+        profileForm.addEventListener('submit', function(event) {
+            // Se a senha atual não estiver preenchida, não permite salvar
+            if (!document.getElementById('currentPassword').value) {
+                alert('Por favor, digite sua senha atual para confirmar as alterações.');
+                event.preventDefault();
+                return;
+            }
+
+            // Se a nova senha estiver preenchida, valida a confirmação
+            if (newPassword.value && !validatePasswordMatch()) {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
 </body>
 </html>

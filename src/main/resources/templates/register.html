@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro - Gerenciador de Tarefas</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- CSS personalizado -->
+  <link rel="stylesheet" href="/css/auth-styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="login-container">
+        <div class="text-center mb-4">
+          <i class="fas fa-tasks app-icon"></i>
+          <h2 class="app-title">Gerenciador de Tarefas</h2>
+        </div>
+
+        <div class="card login-card">
+          <div class="card-body p-4">
+            <h3 class="text-center mb-4">Cadastro</h3>
+
+            <div th:if="${param.success}" class="alert alert-success">
+              Cadastro realizado com sucesso! Faça login para continuar.
+            </div>
+
+            <div th:if="${param.error}" class="alert alert-danger">
+              Ocorreu um erro no cadastro. Tente novamente.
+            </div>
+
+            <form th:action="@{/register}" method="post" th:object="${user}">
+              <div class="mb-3">
+                <label for="name" class="form-label">Nome Completo</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-user"></i></span>
+                  <input type="text" id="name" name="name" class="form-control"
+                         placeholder="Seu nome completo" required autofocus th:field="*{name}">
+                </div>
+                <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+              </div>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                  <input type="email" id="email" name="email" class="form-control"
+                         placeholder="Seu email" required th:field="*{email}">
+                </div>
+                <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+              </div>
+
+              <div class="mb-3">
+                <label for="password" class="form-label">Senha</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                  <input type="password" id="password" name="password" class="form-control"
+                         placeholder="Crie uma senha" required th:field="*{password}">
+                  <button type="button" class="btn btn-outline-secondary toggle-password">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+                <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                <small class="form-text text-muted">A senha deve ter pelo menos 6 caracteres.</small>
+              </div>
+
+              <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Confirmar Senha</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                  <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
+                         placeholder="Confirme sua senha" required>
+                </div>
+                <div class="invalid-feedback" id="password-match-error" style="display: none;">
+                  As senhas não coincidem.
+                </div>
+              </div>
+
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg" id="register-btn">
+                  <i class="fas fa-user-plus me-2"></i>Cadastrar
+                </button>
+              </div>
+            </form>
+
+            <div class="text-center mt-4">
+              <p>Já tem uma conta? <a th:href="@{/login}" class="login-link">Faça login</a></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-3 text-muted">
+          <small>&copy; 2023 Gerenciador de Tarefas</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script para validação de formulário -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Toggle password visibility
+      const togglePassword = document.querySelector('.toggle-password');
+      const passwordField = document.querySelector('#password');
+
+      togglePassword.addEventListener('click', function() {
+          const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordField.setAttribute('type', type);
+          this.querySelector('i').classList.toggle('fa-eye');
+          this.querySelector('i').classList.toggle('fa-eye-slash');
+      });
+
+      // Password confirmation validation
+      const form = document.querySelector('form');
+      const password = document.querySelector('#password');
+      const confirmPassword = document.querySelector('#confirmPassword');
+      const passwordMatchError = document.querySelector('#password-match-error');
+      const registerBtn = document.querySelector('#register-btn');
+
+      function validatePasswordMatch() {
+          if (password.value !== confirmPassword.value) {
+              passwordMatchError.style.display = 'block';
+              confirmPassword.classList.add('is-invalid');
+              return false;
+          } else {
+              passwordMatchError.style.display = 'none';
+              confirmPassword.classList.remove('is-invalid');
+              return true;
+          }
+      }
+
+      confirmPassword.addEventListener('input', validatePasswordMatch);
+      password.addEventListener('input', validatePasswordMatch);
+
+      form.addEventListener('submit', function(event) {
+          if (!validatePasswordMatch()) {
+              event.preventDefault();
+          }
+      });
+  });
+</script>
+</body>
+</html>
