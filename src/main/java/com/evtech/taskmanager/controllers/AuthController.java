@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,6 +26,13 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
+        this.userService =  userService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     // Página inicial - redireciona para login se não estiver autenticado
     @GetMapping("/")
@@ -61,7 +69,7 @@ public class AuthController {
                     return "redirect:/admin/users";
                 }
 
-                return "redirect:/tasks";
+                return "redirect:/users/{id}/tasks";
             } else {
                 redirectAttributes.addFlashAttribute("error", "Email ou senha inválidos");
                 return "redirect:/login?error";
@@ -99,12 +107,12 @@ public class AuthController {
             User user = new User();
             user.setName(userDTO.name());
             user.setEmail(userDTO.email());
-            user.setPassword(userDTO.password());
+            user.setPassword(passwordEncoder.encode(userDTO.password()));
 
             userService.insert(user);
 
             redirectAttributes.addFlashAttribute("success", "Cadastro realizado com sucesso!");
-            return "redirect:/login?success";
+            return "redirect:/users/{id}/tasks";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Erro ao cadastrar: " + e.getMessage());
             return "redirect:/register?error";

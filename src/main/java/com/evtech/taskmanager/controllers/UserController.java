@@ -6,6 +6,7 @@ import com.evtech.taskmanager.entities.User;
 import com.evtech.taskmanager.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -18,8 +19,15 @@ import java.util.List;
 @RequestMapping(value = "/users")
 public class UserController {
 
+    private final PasswordEncoder passwordEncoder;
+
     @Autowired
     private UserService userService;
+
+    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> findAll() {
@@ -65,7 +73,7 @@ public class UserController {
     public ResponseEntity<UserDTO> insert(@RequestBody UserDTO dto){
         User obj = new User();
         obj.setEmail(dto.email());
-        obj.setPassword(dto.password());
+        obj.setPassword(passwordEncoder.encode(dto.password()));
         obj = userService.insert(obj);
         List<TaskDTO> tasksDTO = new ArrayList<>();
 
@@ -96,7 +104,7 @@ public class UserController {
         obj.setName(dto.name());
         obj.setUsername(dto.username());
         obj.setEmail(dto.email());
-        obj.setPassword(dto.password());
+        obj.setPassword(passwordEncoder.encode(dto.password()));
 
         // Atualiza o usuário mantendo as tarefas existentes
         obj = userService.update(id, obj);
