@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -58,7 +59,9 @@ public class AuthController {
         try {
             Optional<User> userOpt = userService.findByEmail(email);
 
-            if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+            if (userOpt.isPresent() && encoder.matches(password, userOpt.get().getPassword())) {
                 User user = userOpt.get();
                 session.setAttribute("userId", user.getId());
                 session.setAttribute("userName", user.getName());
@@ -69,7 +72,7 @@ public class AuthController {
                     return "redirect:/admin/users";
                 }
 
-                return "redirect:/users/{id}/tasks";
+                return "redirect:/users/" + user.getId() + "/tasks";
             } else {
                 redirectAttributes.addFlashAttribute("error", "Email ou senha inválidos");
                 return "redirect:/login?error";
