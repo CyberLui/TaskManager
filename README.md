@@ -1,4 +1,4 @@
-# TaskManager
+#
 
 Este repositório faz parte da minha simulação de estágio em Java, onde estou desenvolvendo um sistema utilizando boas práticas de desenvolvimento e padrões do mercado.
 
