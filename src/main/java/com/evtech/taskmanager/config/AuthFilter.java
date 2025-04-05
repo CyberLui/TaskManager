@@ -68,6 +68,18 @@ public class AuthFilter implements Filter {
             }
         }
 
+        if (path.matches("^/users/\\d+/tasks/?$")) {
+            String[] pathParts = path.split("/");
+            String pathUserId = pathParts[2]; // ID que veio na URL
+            String sessionUserId = session.getAttribute("userId").toString();
+
+            // Se o ID da URL for diferente do da sessão, bloqueia
+            if (!pathUserId.equals(sessionUserId)) {
+                httpResponse.sendRedirect("/users/" + sessionUserId + "/tasks");
+                return;
+            }
+        }
+
         // Permite o acesso
         chain.doFilter(request, response);
     }
